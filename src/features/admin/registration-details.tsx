@@ -10,6 +10,8 @@ import {
   WalletCards,
 } from "lucide-react";
 
+import { GuestWhatsAppButton } from "./guest-whatsapp-button";
+
 type Group = {
   groupId: string;
   email: string;
@@ -36,6 +38,7 @@ type Guest = {
   rgPhotoUrl: string;
   completionStatus: string;
   completedAt: string;
+  registrationUrl: string;
 };
 
 type GroupFile = {
@@ -166,16 +169,7 @@ export function RegistrationDetails({
   }
 
   const { group, guests, files } = details;
-  <div className="flex flex-wrap gap-3">
-    <Link
-      href={`/admin/inscricoes/${encodeURIComponent(
-        group.groupId,
-      )}/editar`}
-      className="rounded-2xl bg-pink-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-pink-400"
-    >
-      Editar inscrição
-    </Link>
-</div>
+
   return (
     <section className="mt-8 space-y-6">
     <div className="flex flex-wrap gap-3">
@@ -233,12 +227,12 @@ export function RegistrationDetails({
           />
 
           <DetailItem
-            label="Nome do padrinho"
+            label="Nome do Pai adotivo"
             value={group.sponsorName}
           />
 
           <DetailItem
-            label="WhatsApp do padrinho"
+            label="WhatsApp do pai adotivo"
             value={group.sponsorWhatsapp}
           />
         </div>
@@ -251,6 +245,7 @@ export function RegistrationDetails({
         />
 
         <div className="mt-6 space-y-4">
+          
           {guests.map((guest) => (
             <GuestCard
               key={guest.id}
@@ -364,6 +359,11 @@ function GuestCard({
 }: {
   guest: Guest;
 }) {
+  const churchLabel =
+    guest.otherChurch === "OTHER"
+      ? "Outra igreja"
+      : guest.otherChurch;
+
   return (
     <article className="rounded-2xl border border-white/10 bg-black/10 p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -373,11 +373,11 @@ function GuestCard({
           </p>
 
           <h3 className="mt-2 text-xl font-black">
-            {guest.name}
+            {guest.name || "Nome não informado"}
           </h3>
 
           <p className="mt-1 text-sm text-white/50">
-            {guest.whatsapp}
+            {guest.whatsapp || "WhatsApp não informado"}
           </p>
         </div>
 
@@ -386,18 +386,16 @@ function GuestCard({
             guest.completionStatus,
           )}`}
         >
-          {getStatusLabel(guest.completionStatus)}
+          {getStatusLabel(
+            guest.completionStatus,
+          )}
         </span>
       </div>
 
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         <DetailItem
           label="Igreja"
-          value={
-            guest.otherChurch === "OTHER"
-              ? guest.otherChurch
-              : guest.church
-          }
+          value={churchLabel}
         />
 
         <DetailItem
@@ -412,7 +410,9 @@ function GuestCard({
 
         <DetailItem
           label="Concluído em"
-          value={formatDate(guest.completedAt)}
+          value={formatDate(
+            guest.completedAt,
+          )}
         />
       </div>
 
@@ -431,7 +431,7 @@ function GuestCard({
             href={guest.personPhotoUrl}
             target="_blank"
             rel="noreferrer"
-            className="rounded-xl border border-white/10 px-3 py-2 text-xs font-semibold text-white/70 hover:bg-white/10 hover:text-white"
+            className="rounded-xl border border-white/10 px-3 py-2 text-xs font-semibold text-white/70 transition hover:bg-white/10 hover:text-white"
           >
             Foto do convidado
           </a>
@@ -442,10 +442,24 @@ function GuestCard({
             href={guest.rgPhotoUrl}
             target="_blank"
             rel="noreferrer"
-            className="rounded-xl border border-white/10 px-3 py-2 text-xs font-semibold text-white/70 hover:bg-white/10 hover:text-white"
+            className="rounded-xl border border-white/10 px-3 py-2 text-xs font-semibold text-white/70 transition hover:bg-white/10 hover:text-white"
           >
             Foto do RG
           </a>
+        )}
+
+        {guest.registrationUrl ? (
+          <GuestWhatsAppButton
+            name={guest.name}
+            phone={guest.whatsapp}
+            registrationUrl={
+              guest.registrationUrl
+            }
+          />
+        ) : (
+          <span className="rounded-xl border border-amber-300/20 bg-amber-400/10 px-3 py-2 text-xs text-amber-200">
+            Link do convidado indisponível
+          </span>
         )}
       </div>
     </article>

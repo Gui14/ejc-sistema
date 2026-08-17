@@ -22,7 +22,7 @@ export async function DELETE(
       return NextResponse.json(
         {
           ok: false,
-          error: "ID do padrinho não informado.",
+          error: "ID do Pai adotivo não informado.",
         },
         { status: 400 },
       );
@@ -33,11 +33,11 @@ export async function DELETE(
     return NextResponse.json({
       ok: true,
       sponsorId,
-      message: "Padrinho excluído com sucesso.",
+      message: "Pai adotivo excluído com sucesso.",
     });
   } catch (error) {
     console.error(
-      "Erro ao excluir padrinho:",
+      "Erro ao excluir Pai adotivo:",
       error,
     );
 
@@ -47,7 +47,7 @@ export async function DELETE(
         error:
           error instanceof Error
             ? error.message
-            : "Não foi possível excluir o padrinho.",
+            : "Não foi possível excluir o Pai adotivo.",
       },
       { status: 500 },
     );

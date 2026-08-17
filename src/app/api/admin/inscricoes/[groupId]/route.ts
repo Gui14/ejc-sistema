@@ -52,7 +52,7 @@ export async function DELETE(
     return NextResponse.json({
       ok: true,
       message:
-        "Inscrição, padrinho e convidados foram desativados.",
+        "Inscrição, Pai adotivo e convidados foram desativados.",
       result,
     });
   } catch (error) {

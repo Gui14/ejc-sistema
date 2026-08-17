@@ -147,7 +147,7 @@ export const registrationSchema = z.object({
     .trim()
     .min(
       3,
-      "Informe o nome completo do padrinho.",
+      "Informe o nome completo do Pai adotivo.",
     ),
 
   sponsorWhatsapp: requiredPhone,

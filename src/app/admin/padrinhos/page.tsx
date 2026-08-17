@@ -17,11 +17,11 @@ export default async function AdminSponsorsPage() {
 
         <div className="mt-6">
           <h1 className="text-3xl font-black">
-            Padrinhos
+            Pai adotivo
           </h1>
 
           <p className="mt-2 text-sm text-white/50">
-            Acompanhe os padrinhos e o preenchimento dos convidados.
+            Acompanhe os pais adotivos e o preenchimento dos convidados.
           </p>
         </div>
 

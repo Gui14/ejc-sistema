@@ -100,7 +100,7 @@ export function AdminSponsorsTable({
     sponsorName: string,
   ) {
     const confirmed = window.confirm(
-      `Tem certeza que deseja excluir o padrinho ${sponsorName}?`,
+      `Tem certeza que deseja excluir o Pai adotivo ${sponsorName}?`,
     );
 
     if (!confirmed) {
@@ -125,7 +125,7 @@ export function AdminSponsorsTable({
       if (!response.ok) {
         throw new Error(
           result.error ??
-            "Não foi possível excluir o padrinho.",
+            "Não foi possível excluir o Pai adotivo.",
         );
       }
 
@@ -134,7 +134,7 @@ export function AdminSponsorsTable({
       setError(
         deleteError instanceof Error
           ? deleteError.message
-          : "Erro ao excluir padrinho.",
+          : "Erro ao excluir Pai adotivo.",
       );
     } finally {
       setDeletingId(null);
@@ -149,7 +149,7 @@ export function AdminSponsorsTable({
           onChange={(event) =>
             setQuery(event.target.value)
           }
-          placeholder="Buscar padrinho, convidado ou telefone"
+          placeholder="Buscar Pai adotivo, convidado ou telefone"
           className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-white/30"
         />
       </div>
@@ -201,7 +201,7 @@ export function AdminSponsorsTable({
                   </td>
 
                   <td className="px-5 py-4 text-xs uppercase tracking-wide text-white/50">
-                    Padrinho
+                    Pai adotivo
                   </td>
 
                   <td className="px-5 py-4 text-white/60">
@@ -253,7 +253,7 @@ export function AdminSponsorsTable({
                       colSpan={6}
                       className="px-5 py-5 pl-10 text-sm text-white/35"
                     >
-                      Nenhum convidado vinculado a este padrinho.
+                      Nenhum convidado vinculado a este Pai adotivo.
                     </td>
                   </tr>
                 )}
@@ -333,7 +333,7 @@ export function AdminSponsorsTable({
                     colSpan={6}
                     className="px-5 py-12 text-center text-white/40"
                   >
-                    Nenhum padrinho ou convidado encontrado.
+                    Nenhum Pai adotivo ou convidado encontrado.
                   </td>
                 </tr>
               </tbody>

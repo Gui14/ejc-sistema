@@ -30,14 +30,14 @@ export default function AdminLayout({
               href="/admin/padrinhos"
               className="whitespace-nowrap rounded-xl px-3 py-2 text-sm text-white/65 transition hover:bg-white/10 hover:text-white"
             >
-              Padrinhos
+              Pais adotivos
             </Link>
 
             <Link
-              href="/admin/arquivos"
+              href="/admin/convidados"
               className="whitespace-nowrap rounded-xl px-3 py-2 text-sm text-white/65 transition hover:bg-white/10 hover:text-white"
             >
-              Arquivos
+              Convidados
             </Link>
 
             <Link

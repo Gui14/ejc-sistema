@@ -247,7 +247,7 @@ export function RegistrationEditForm({
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
               <label className="text-sm font-semibold text-white/80">
-                Nome do padrinho
+                Nome do Pai adotivo
               </label>
 
               <TextInput
@@ -264,7 +264,7 @@ export function RegistrationEditForm({
 
             <div>
               <label className="text-sm font-semibold text-white/80">
-                WhatsApp do padrinho
+                WhatsApp do Pai adotivo
               </label>
 
               <TextInput

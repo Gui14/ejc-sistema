@@ -289,7 +289,7 @@ async function deleteRegistration(
                 onChange={(event) =>
                   setSearch(event.target.value)
                 }
-                placeholder="ID, e-mail ou nome do padrinho"
+                placeholder="ID, e-mail ou nome do Pai adotivo"
                 className="pl-12"
               />
             </div>
@@ -330,7 +330,7 @@ async function deleteRegistration(
             <thead className="border-b border-white/10 bg-white/5 text-xs uppercase tracking-wider text-white/45">
               <tr>
                 <th className="px-5 py-4">Inscrição</th>
-                <th className="px-5 py-4">Padrinho</th>
+                <th className="px-5 py-4">Pai adotivo</th>
                 <th className="px-5 py-4">Convidados</th>
                 <th className="px-5 py-4">Valor previsto</th>
                 <th className="px-5 py-4">PIX</th>

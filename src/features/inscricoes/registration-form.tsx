@@ -479,13 +479,13 @@ export function RegistrationForm() {
           </p>
 
           <h2 className="mt-2 text-2xl font-black">
-            Dados do padrinho
+            Dados do Pai adotivo
           </h2>
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2">
           <FormField
-            label="Nome completo do padrinho"
+            label="Nome completo do Pai adotivo"
             error={
               errors.sponsorName?.message
             }
@@ -497,7 +497,7 @@ export function RegistrationForm() {
           </FormField>
 
           <FormField
-            label="WhatsApp do padrinho"
+            label="WhatsApp do Pai adotivo"
             error={
               errors.sponsorWhatsapp?.message
             }

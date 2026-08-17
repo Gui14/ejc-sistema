@@ -161,6 +161,7 @@ export async function getAdminGuests() {
       completionStatus: getValue(row, 15),
       completedAt: getValue(row, 16),
       recordStatus: getValue(row, 19),
+      registrationUrl: getValue(row, 14),
     }));
 }
 
@@ -832,10 +833,10 @@ const GUEST_COMPLETION_STATUS_COLUMN = 15;
 const GUEST_REGISTRY_STATUS_COLUMN = 19;
 
 const SPONSOR_ID_COLUMN = 0;
-const SPONSOR_NAME_COLUMN = 1;
-const SPONSOR_PHONE_COLUMN = 2;
-const SPONSOR_CREATED_BY_COLUMN = 3;
-const SPONSOR_REGISTRY_STATUS_COLUMN = 8;
+const SPONSOR_NAME_COLUMN = 3;
+const SPONSOR_PHONE_COLUMN = 4;
+const SPONSOR_CREATED_BY_COLUMN = 2;
+const SPONSOR_REGISTRY_STATUS_COLUMN = 10;
 
 export async function getAdminSponsors(): Promise<
   AdminSponsor[]
@@ -971,7 +972,7 @@ export async function getAdminSponsorById(
     (row, index) =>
       index > 0 &&
       getCell(row, 0) === sponsorId &&
-      getCell(row, 8) !== "DELETED",
+      getCell(row, 10) !== "DELETED",
   );
 
   if (!row) {
@@ -980,9 +981,9 @@ export async function getAdminSponsorById(
 
   return {
     id: getCell(row, 0),
-    name: getCell(row, 1),
-    phone: getCell(row, 2),
-    createdBy: getCell(row, 3),
+    name: getCell(row, 3),
+    phone: getCell(row, 4),
+    createdBy: getCell(row, 2),
   };
 }
 
@@ -1000,7 +1001,7 @@ export async function softDeleteSponsor(
 
   if (rowIndex < 1) {
     throw new Error(
-      "Padrinho não encontrado.",
+      "Pai adotivo não encontrado.",
     );
   }
 
@@ -1009,7 +1010,7 @@ export async function softDeleteSponsor(
   ];
 
   // Coluna I: status_registro
-  updatedRow[8] = "DELETED";
+  updatedRow[10] = "DELETED";
 
   await updateSheetRow(
     "Padrinhos",
@@ -1017,4 +1018,130 @@ export async function softDeleteSponsor(
     updatedRow,
   );
   clearSheetCache("Padrinhos");
+}
+
+export type AdminGuest = {
+  id: string;
+  groupId: string;
+  sponsorId: string;
+  sponsorName: string;
+  name: string;
+  phone: string;
+  profile: string;
+  otherChurchName: string;
+  status: string;
+  registrationToken: string;
+  registrationUrl: string;
+  completed: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+const GUEST_GROUP_ID_COLUMN = 1;
+const GUEST_PROFILE_COLUMN = 5;
+const GUEST_OTHER_CHURCH_COLUMN = 4;
+const GUEST_CREATED_AT_COLUMN = 17;
+const GUEST_UPDATED_AT_COLUMN = 18;
+
+export async function getAdminGuestsbetter(): Promise<
+  AdminGuest[]
+> {
+  const guestRows =
+    await getSheetRows("Convidados");
+
+  const sponsorRows =
+    await getSheetRows("Padrinhos");
+
+  const sponsorMap = new Map<
+    string,
+    string
+  >();
+
+  sponsorRows
+    .slice(1)
+    .filter(
+      (row) =>
+        getCell(row, 10) !== "DELETED",
+    )
+    .forEach((row) => {
+      sponsorMap.set(
+        getCell(row, 0),
+        getCell(row, 3),
+      );
+    });
+
+  return guestRows
+    .slice(1)
+    .filter(
+      (row) =>
+        getCell(
+          row,
+          GUEST_REGISTRY_STATUS_COLUMN,
+        ) !== "DELETED",
+    )
+    .map((row) => {
+      const guestId = getCell(
+        row,
+        GUEST_ID_COLUMN,
+      );
+
+      const token = getCell(
+        row,
+        GUEST_TOKEN_COLUMN,
+      );
+
+      const completionStatus = getCell(
+        row,
+        GUEST_COMPLETION_STATUS_COLUMN,
+      );
+
+      return {
+        id: guestId,
+        groupId: getCell(
+          row,
+          GUEST_GROUP_ID_COLUMN,
+        ),
+        sponsorId: getCell(
+          row,
+          GUEST_SPONSOR_ID_COLUMN,
+        ),
+        sponsorName:
+          sponsorMap.get(
+            getCell(
+              row,
+              GUEST_SPONSOR_ID_COLUMN,
+            ),
+          ) ?? "Sem padrinho",
+        name: getCell(
+          row,
+          GUEST_NAME_COLUMN,
+        ),
+        phone: getCell(
+          row,
+          GUEST_PHONE_COLUMN,
+        ),
+        profile: getCell(
+          row,
+          GUEST_PROFILE_COLUMN,
+        ),
+        otherChurchName: getCell(
+          row,
+          GUEST_OTHER_CHURCH_COLUMN,
+        ),
+        status: completionStatus,
+        registrationToken: token,
+        registrationUrl:
+          buildGuestRegistrationUrl(token),
+        completed:
+          completionStatus === "COMPLETED",
+        createdAt: getCell(
+          row,
+          GUEST_CREATED_AT_COLUMN,
+        ),
+        updatedAt: getCell(
+          row,
+          GUEST_UPDATED_AT_COLUMN,
+        ),
+      };
+    });
 }
