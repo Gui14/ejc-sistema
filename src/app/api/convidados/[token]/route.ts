@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 
-import { maxFileSize } from "@/features/inscricoes/schema";
-import { uploadFileToDrive } from "@/lib/google/drive";
+import {
+  maxFileSize,
+} from "@/features/inscricoes/schema";
+
+import {
+  uploadFileToDrive,
+} from "@/lib/google/drive";
+
 import {
   findGuestByTokenFromSheet,
   updateGuestInSheet,
@@ -15,35 +21,115 @@ type RouteContext = {
   }>;
 };
 
+const PERSON_PHOTO_TYPES = [
+  "image/png",
+  "image/jpeg",
+];
+
+const RG_PHOTO_TYPES = [
+  "image/png",
+  "image/jpeg",
+  "application/pdf",
+];
+
+function jsonError(
+  message: string,
+  status: number,
+) {
+  return NextResponse.json(
+    {
+      ok: false,
+      error: message,
+    },
+    { status },
+  );
+}
+
+function getFileFromFormData(
+  formData: FormData,
+  fieldName: string,
+) {
+  const value = formData.get(fieldName);
+
+  return value instanceof File
+    ? value
+    : null;
+}
+
+function validateFile(
+  file: File,
+  allowedTypes: string[],
+  label: string,
+) {
+  if (!allowedTypes.includes(file.type)) {
+    return `${label} possui formato inválido.`;
+  }
+
+  if (file.size > maxFileSize) {
+    return `${label} deve ter no máximo 10 MB.`;
+  }
+
+  return null;
+}
+
+function serializeGuest(guest: {
+  id: string;
+  name: string;
+  status: string;
+  foodRestriction?: string | null;
+  personPhotoUrl?: string | null;
+  rgPhotoUrl?: string | null;
+}) {
+  return {
+    id: guest.id,
+    name: guest.name,
+    completionStatus: guest.status,
+    foodRestriction:
+      guest.foodRestriction ?? null,
+    personPhotoUrl:
+      guest.personPhotoUrl ?? null,
+    rgPhotoUrl:
+      guest.rgPhotoUrl ?? null,
+  };
+}
+
+function requiredText(
+  value: FormDataEntryValue | null,
+  label: string,
+) {
+  if (
+    typeof value !== "string" ||
+    !value.trim()
+  ) {
+    throw new Error(
+      `${label} é obrigatório.`,
+    );
+  }
+
+  return value.trim();
+}
+
 export async function GET(
   _request: Request,
   context: RouteContext,
 ) {
   try {
-    const { token } = await context.params;
+    const { token } =
+      await context.params;
 
-    const guest = await findGuestByTokenFromSheet(token);
+    const guest =
+      await findGuestByTokenFromSheet(token);
 
     if (!guest) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: "Link do convidado não encontrado.",
-        },
-        { status: 404 },
+      return jsonError(
+        "Link do convidado não encontrado.",
+        404,
       );
     }
 
     return NextResponse.json({
       ok: true,
-      guest: {
-        id: guest.id,
-        name: guest.name,
-        completionStatus: guest.status,
-        foodRestriction: guest.foodRestriction || null,
-        personPhotoUrl: guest.personPhotoUrl || null,
-        rgPhotoUrl: guest.rgPhotoUrl || null,
-      },
+      guest: serializeGuest(guest),
     });
   } catch (error) {
     console.error(
@@ -51,12 +137,9 @@ export async function GET(
       error,
     );
 
-    return NextResponse.json(
-      {
-        ok: false,
-        error: "Não foi possível carregar o cadastro.",
-      },
-      { status: 500 },
+    return jsonError(
+      "Não foi possível carregar o cadastro.",
+      500,
     );
   }
 }
@@ -65,140 +148,248 @@ export async function POST(
   request: Request,
   context: RouteContext,
 ) {
-  let uploadedPersonPhotoId: string | null = null;
-  let uploadedRgPhotoId: string | null = null;
+  let uploadedPersonPhotoId: string | null =
+    null;
+
+  let uploadedRgPhotoId: string | null =
+    null;
 
   try {
-    const { token } = await context.params;
+    const { token } =
+      await context.params;
 
-    const guest = await findGuestByTokenFromSheet(token);
+    const guest =
+      await findGuestByTokenFromSheet(token);
 
     if (!guest) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: "Link do convidado não encontrado.",
-        },
-        { status: 404 },
+      return jsonError(
+        "Link do convidado não encontrado.",
+        404,
       );
     }
 
-    const formData = await request.formData();
+    const formData =
+      await request.formData();
 
-    const foodRestriction = formData.get(
-      "foodRestriction",
-    );
+    const age = formData.get("age");
+const birthDate = formData.get("birthDate");
+const sex = formData.get("sex");
+const education = formData.get("education");
+const religion = formData.get("religion");
+const otherReligion =
+  formData.get("otherReligion");
+const church = formData.get("church");
+const otherChurch =
+  formData.get("otherChurch");
+const email = formData.get("email");
+const phone = formData.get("phone");
+const address = formData.get("address");
+const neighborhood =
+  formData.get("neighborhood");
+const city = formData.get("city");
+const otherCity =
+  formData.get("otherCity");
+const cep = formData.get("cep");
+const completionFoodRestriction =
+  formData.get("completionFoodRestriction");
+const otherFoodRestriction =
+  formData.get("otherFoodRestriction");
+const specialMedication =
+  formData.get("specialMedication");
+const otherSpecialMedication =
+  formData.get("otherSpecialMedication");
 
-    if (
-      typeof foodRestriction !== "string" ||
-      foodRestriction.trim().length === 0
-    ) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: "Informe a questão alimentar.",
-        },
-        { status: 400 },
+    const personPhoto =
+      getFileFromFormData(
+        formData,
+        "personPhoto",
+      );
+
+    if (!personPhoto) {
+      return jsonError(
+        "Envie a foto do convidado.",
+        400,
       );
     }
 
-    const personPhoto = formData.get("personPhoto");
-    const rgPhoto = formData.get("rgPhoto");
+    const rgPhoto =
+      getFileFromFormData(
+        formData,
+        "rgPhoto",
+      );
 
-    if (!(personPhoto instanceof File)) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: "Envie a foto do convidado.",
-        },
-        { status: 400 },
+    if (!rgPhoto) {
+      return jsonError(
+        "Envie a foto do RG.",
+        400,
       );
     }
 
-    if (!(rgPhoto instanceof File)) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: "Envie a foto do RG.",
-        },
-        { status: 400 },
+    const personPhotoError =
+      validateFile(
+        personPhoto,
+        PERSON_PHOTO_TYPES,
+        "A foto do convidado",
+      );
+
+    if (personPhotoError) {
+      return jsonError(
+        personPhotoError,
+        400,
       );
     }
 
-    const allowedPersonPhotoTypes = [
-      "image/png",
-      "image/jpeg",
-    ];
+    const rgPhotoError =
+      validateFile(
+        rgPhoto,
+        RG_PHOTO_TYPES,
+        "O RG",
+      );
 
-    const allowedRgTypes = [
-      "image/png",
-      "image/jpeg",
-      "application/pdf",
-    ];
-
-    if (
-      !allowedPersonPhotoTypes.includes(personPhoto.type) ||
-      personPhoto.size > maxFileSize
-    ) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error:
-            "A foto do convidado deve ser PNG ou JPG e ter até 10 MB.",
-        },
-        { status: 400 },
+    if (rgPhotoError) {
+      return jsonError(
+        rgPhotoError,
+        400,
       );
     }
 
-    if (
-      !allowedRgTypes.includes(rgPhoto.type) ||
-      rgPhoto.size > maxFileSize
-    ) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error:
-            "O RG deve ser PNG, JPG ou PDF e ter até 10 MB.",
-        },
-        { status: 400 },
+    const uploadedPersonPhoto =
+      await uploadFileToDrive(
+        personPhoto,
+        "GUEST_PHOTO",
       );
-    }
 
-    const uploadedPersonPhoto = await uploadFileToDrive(
-      personPhoto,
-      "GUEST_PHOTO",
-    );
+    uploadedPersonPhotoId =
+      uploadedPersonPhoto.id ?? null;
 
-    uploadedPersonPhotoId = uploadedPersonPhoto.id ?? null;
+    const uploadedRgPhoto =
+      await uploadFileToDrive(
+        rgPhoto,
+        "RG_PHOTO",
+      );
 
-    const uploadedRgPhoto = await uploadFileToDrive(
-      rgPhoto,
-      "RG_PHOTO",
-    );
+    uploadedRgPhotoId =
+      uploadedRgPhoto.id ?? null;
 
-    uploadedRgPhotoId = uploadedRgPhoto.id ?? null;
+    const update = {
+  age: requiredText(age, "Idade"),
+  birthDate: requiredText(
+    birthDate,
+    "Data de nascimento",
+  ),
+  sex: requiredText(sex, "Sexo"),
+  education: requiredText(
+    education,
+    "Escolaridade",
+  ),
+  religion: requiredText(
+    religion,
+    "Religião",
+  ),
+  otherReligion:
+    typeof otherReligion === "string"
+      ? otherReligion.trim()
+      : "",
+  completionChurch: requiredText(
+    church,
+    "Igreja",
+  ),
+  completionOtherChurch:
+    typeof otherChurch === "string"
+      ? otherChurch.trim()
+      : "",
+  completionEmail: requiredText(
+    email,
+    "E-mail",
+  ),
+  completionPhone: requiredText(
+    phone,
+    "Telefone",
+  ),
+  address: requiredText(
+    address,
+    "Endereço",
+  ),
+  neighborhood: requiredText(
+    neighborhood,
+    "Bairro",
+  ),
+  city: requiredText(city, "Cidade"),
+  otherCity:
+    typeof otherCity === "string"
+      ? otherCity.trim()
+      : "",
+  cep: requiredText(cep, "CEP"),
+  completionFoodRestriction:
+    requiredText(
+      completionFoodRestriction,
+      "Restrição alimentar",
+    ),
+  otherFoodRestriction:
+    typeof otherFoodRestriction ===
+    "string"
+      ? otherFoodRestriction.trim()
+      : "",
+  specialMedication: requiredText(
+    specialMedication,
+    "Medicação especial",
+  ),
+  otherSpecialMedication:
+    typeof otherSpecialMedication ===
+    "string"
+      ? otherSpecialMedication.trim()
+      : "",
+  personPhotoUrl:
+    uploadedPersonPhoto.webViewLink ?? "",
+  rgPhotoUrl:
+    uploadedRgPhoto.webViewLink ?? "",
+};
+if (
+  religion === "OTHER" &&
+  !String(otherReligion ?? "").trim()
+) {
+  return NextResponse.json(
+    {
+      ok: false,
+      error:
+        "Informe sua religião.",
+    },
+    { status: 400 },
+  );
+}
 
-    const updatedGuest = await updateGuestInSheet(
-      guest,
-      {
-        foodRestriction: foodRestriction.trim(),
-        personPhotoUrl:
-          uploadedPersonPhoto.webViewLink ?? "",
-        rgPhotoUrl: uploadedRgPhoto.webViewLink ?? "",
-        futureFields: guest.futureFields || "{}",
-      },
-    );
+if (
+  church === "OTHER" &&
+  !String(otherChurch ?? "").trim()
+) {
+  return NextResponse.json(
+    {
+      ok: false,
+      error:
+        "Informe o nome da igreja.",
+    },
+    { status: 400 },
+  );
+}
+
+if (
+  city === "OTHER" &&
+  !String(otherCity ?? "").trim()
+) {
+  return NextResponse.json(
+    {
+      ok: false,
+      error:
+        "Informe o nome da cidade.",
+    },
+    { status: 400 },
+  );
+}
 
     return NextResponse.json({
       ok: true,
-      guest: {
-        id: updatedGuest.id,
-        name: updatedGuest.name,
-        completionStatus: updatedGuest.status,
-        foodRestriction: updatedGuest.foodRestriction,
-        personPhotoUrl: updatedGuest.personPhotoUrl,
-        rgPhotoUrl: updatedGuest.rgPhotoUrl,
-      },
+      guest: updateGuestInSheet(guest, update),
+  
     });
   } catch (error) {
     console.error(
@@ -209,7 +400,11 @@ export async function POST(
     return NextResponse.json(
       {
         ok: false,
-        error: "Não foi possível salvar os dados do convidado.",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Não foi possível salvar os dados do convidado.",
+
         uploadedPersonPhotoId,
         uploadedRgPhotoId,
       },

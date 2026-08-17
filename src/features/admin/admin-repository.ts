@@ -340,7 +340,7 @@ export async function deleteRegistrationCascade(
       updatedRow[19] = "DELETED";
 
       updateRequests.push({
-        range: `Convidados!A${index + 1}:T${index + 1}`,
+        range: `Convidados!A${index + 1}:AM${index + 1}`,
         values: [updatedRow],
       });
     }
@@ -579,15 +579,172 @@ export async function updateRegistrationGroup(
 export async function getAdminGuestById(
   guestId: string,
 ) {
-  const guests = await getAdminGuests();
+  const rows =
+    await getSheetRows("Convidados");
 
-  return (
-    guests.find(
-      (guest) =>
-        guest.id === guestId &&
-        guest.recordStatus !== "DELETED",
-    ) ?? null
+  const rowIndex = rows.findIndex(
+    (row, index) =>
+      index > 0 &&
+      getCell(row, 0) === guestId &&
+      getCell(row, 19) !== "DELETED",
   );
+
+  if (rowIndex < 1) {
+    return null;
+  }
+
+  const row = rows[rowIndex];
+
+  return {
+    id: getCell(row, 0),
+    groupId: getCell(row, 1),
+    sponsorId: getCell(row, 2),
+
+    church: getCell(row, 3),
+    otherChurch: getCell(row, 4),
+    profile: getCell(row, 5),
+    name: getCell(row, 6),
+    phone: getCell(row, 7),
+    whatsapp: getCell(row, 7),
+
+    adoptiveParentsName: getCell(
+      row,
+      8,
+    ),
+
+    adoptiveParentsWhatsapp: getCell(
+      row,
+      9,
+    ),
+
+    foodRestriction: getCell(
+      row,
+      10,
+    ),
+
+    personPhotoUrl: getCell(
+      row,
+      11,
+    ),
+
+    rgPhotoUrl: getCell(
+      row,
+      12,
+    ),
+
+    futureFields: getCell(
+      row,
+      13,
+    ),
+
+    token: getCell(row, 14),
+    completionStatus: getCell(
+      row,
+      15,
+    ),
+
+    completedAt: getCell(
+      row,
+      16,
+    ),
+
+    createdAt: getCell(
+      row,
+      17,
+    ),
+
+    updatedAt: getCell(
+      row,
+      18,
+    ),
+
+    recordStatus: getCell(
+      row,
+      19,
+    ),
+
+    // U
+    age: getCell(row, 20),
+
+    // V
+    birthDate: getCell(row, 21),
+
+    // W
+    sex: getCell(row, 22),
+
+    // X
+    education: getCell(row, 23),
+
+    // Y
+    religion: getCell(row, 24),
+
+    // Z
+    otherReligion: getCell(row, 25),
+
+    // AA
+    completionChurch: getCell(
+      row,
+      26,
+    ),
+
+    // AB
+    completionOtherChurch: getCell(
+      row,
+      27,
+    ),
+
+    // AC
+    completionEmail: getCell(
+      row,
+      28,
+    ),
+
+    // AD
+    completionPhone: getCell(
+      row,
+      29,
+    ),
+
+    // AE
+    address: getCell(row, 30),
+
+    // AF
+    neighborhood: getCell(
+      row,
+      31,
+    ),
+
+    // AG
+    city: getCell(row, 32),
+
+    // AH
+    otherCity: getCell(row, 33),
+
+    // AI
+    cep: getCell(row, 34),
+
+    // AJ
+    completionFoodRestriction:
+      getCell(row, 35),
+
+    // AK
+    otherFoodRestriction: getCell(
+      row,
+      36,
+    ),
+
+    // AL
+    specialMedication: getCell(
+      row,
+      37,
+    ),
+
+    // AM
+    otherSpecialMedication: getCell(
+      row,
+      38,
+    ),
+  };
 }
 
 type AdminGuestUpdate = {
@@ -604,60 +761,106 @@ type AdminGuestUpdate = {
 
 export async function updateAdminGuest(
   guestId: string,
-  data: AdminGuestUpdate,
+  data: {
+    name: string;
+    phone: string;
+
+    age: string;
+    birthDate: string;
+    sex: string;
+    education: string;
+    religion: string;
+    otherReligion: string;
+
+    church: string;
+    otherChurch: string;
+    completionOtherChurch: string
+
+    email: string;
+    completionPhone: string;
+
+    address: string;
+    neighborhood: string;
+    city: string;
+    otherCity: string;
+    cep: string;
+
+    completionFoodRestriction: string;
+    otherFoodRestriction: string;
+
+    specialMedication: string;
+    otherSpecialMedication: string;
+  },
 ) {
-  const rows = await getSheetRows("Convidados");
+  const rows =
+    await getSheetRows("Convidados");
 
   const rowIndex = rows.findIndex(
-    (row) => getCell(row, 0) === guestId,
+    (row, index) =>
+      index > 0 &&
+      getCell(row, 0) === guestId &&
+      getCell(row, 19) !== "DELETED",
   );
 
   if (rowIndex < 1) {
-    throw new Error("Convidado não encontrado.");
+    throw new Error(
+      "Convidado não encontrado.",
+    );
   }
 
-  const currentRow = [...rows[rowIndex]];
-  const now = new Date().toISOString();
+  const currentRow = [
+    ...rows[rowIndex],
+  ];
 
-  if (data.church !== undefined) {
-    currentRow[3] = data.church;
+  /*
+   * Garante que a linha tenha todas as
+   * 39 colunas, de A até AM.
+   */
+  while (currentRow.length < 39) {
+    currentRow.push("");
   }
 
-  if (data.otherChurch !== undefined) {
-    currentRow[4] = data.otherChurch;
-  }
+  // Cadastro inicial
+  currentRow[6] = data.name;
+  currentRow[7] = data.phone;
 
-  if (data.profile !== undefined) {
-    currentRow[5] = data.profile;
-  }
+  // Atualização administrativa
+  currentRow[18] =
+    new Date().toISOString();
 
-  if (data.name !== undefined) {
-    currentRow[6] = data.name;
-  }
+  currentRow[20] = data.age;
+  currentRow[21] = data.birthDate;
+  currentRow[22] = data.sex;
+  currentRow[23] = data.education;
+  currentRow[24] = data.religion;
+  currentRow[25] =
+    data.otherReligion;
 
-  if (data.whatsapp !== undefined) {
-    currentRow[7] = data.whatsapp;
-  }
+  currentRow[26] = data.church;
+  currentRow[27] =
+    data.completionOtherChurch;
 
-  if (data.adoptiveParentsName !== undefined) {
-    currentRow[8] = data.adoptiveParentsName;
-  }
+  currentRow[28] = data.email;
+  currentRow[29] =
+    data.completionPhone;
 
-  if (
-    data.adoptiveParentsWhatsapp !== undefined
-  ) {
-    currentRow[9] = data.adoptiveParentsWhatsapp;
-  }
+  currentRow[30] = data.address;
+  currentRow[31] =
+    data.neighborhood;
+  currentRow[32] = data.city;
+  currentRow[33] =
+    data.otherCity;
+  currentRow[34] = data.cep;
 
-  if (data.foodRestriction !== undefined) {
-    currentRow[10] = data.foodRestriction;
-  }
+  currentRow[35] =
+    data.completionFoodRestriction;
+  currentRow[36] =
+    data.otherFoodRestriction;
 
-  if (data.completionStatus !== undefined) {
-    currentRow[15] = data.completionStatus;
-  }
-
-  currentRow[18] = now;
+  currentRow[37] =
+    data.specialMedication;
+  currentRow[38] =
+    data.otherSpecialMedication;
 
   await updateSheetRow(
     "Convidados",
@@ -665,7 +868,11 @@ export async function updateAdminGuest(
     currentRow,
   );
 
-  return getAdminGuestById(guestId);
+  clearSheetCache("Convidados");
+
+  return getAdminGuestById(
+    guestId,
+  );
 }
 
 export async function updateGuestFileLinks(
@@ -1109,7 +1316,7 @@ export async function getAdminGuestsbetter(): Promise<
           sponsorMap.get(
             getCell(
               row,
-              GUEST_SPONSOR_ID_COLUMN,
+              8,
             ),
           ) ?? "Sem padrinho",
         name: getCell(
