@@ -394,7 +394,7 @@ function GuestCard({
         <DetailItem
           label="Igreja"
           value={
-            guest.church === "OTHER"
+            guest.otherChurch === "OTHER"
               ? guest.otherChurch
               : guest.church
           }

@@ -7,7 +7,15 @@ import {
   useState,
   type ChangeEvent,
 } from "react";
+
 import { zodResolver } from "@hookform/resolvers/zod";
+
+
+
+import type {
+  SubmitHandler,
+} from "react-hook-form";
+
 import {
   ArrowLeft,
   CheckCircle2,
@@ -17,6 +25,7 @@ import {
   UploadCloud,
   X,
 } from "lucide-react";
+
 import {
   useFieldArray,
   useForm,
@@ -35,16 +44,28 @@ import {
   maxFileSize,
   maxGuestCount,
   registrationSchema,
-  type RegistrationFormData,
+  type RegistrationInput,
+  type RegistrationOutput,
 } from "./schema";
 
-const emptyGuest = {
-  church: "" as "TEOSOPOLIS" | "OTHER",
-  otherChurchName: "",
-  guestProfile: "" as
+
+type GuestField = {
+  guestProfile:
+    | ""
     | "TEO_MEMBER_OR_ATTENDEE"
     | "NON_EVANGELICAL"
-    | "OTHER_EVANGELICAL_CHURCH",
+    | "OTHER_EVANGELICAL_CHURCH";
+
+  otherChurchName?: string;
+  guestName: string;
+  guestWhatsapp: string;
+  adoptiveParentsName: string;
+  adoptiveParentsWhatsapp: string;
+};
+
+const emptyGuest: GuestField = {
+  guestProfile: "",
+  otherChurchName: "",
   guestName: "",
   guestWhatsapp: "",
   adoptiveParentsName: "",
@@ -60,7 +81,10 @@ function formatFileSize(bytes: number) {
     return `${(bytes / 1024).toFixed(1)} KB`;
   }
 
-  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  return `${(
+    bytes /
+    (1024 * 1024)
+  ).toFixed(2)} MB`;
 }
 
 function formatCurrency(value: number) {
@@ -81,23 +105,44 @@ function createFileList(files: File[]) {
 }
 
 export function RegistrationForm() {
-  const pixInputRef = useRef<HTMLInputElement>(null);
+  const pixInputRef =
+    useRef<HTMLInputElement>(null);
 
-  const [submitted, setSubmitted] = useState(false);
-  const [selectedPixFiles, setSelectedPixFiles] = useState<File[]>([]);
-  const [pixFileError, setPixFileError] = useState<string | null>(null);
-  const [pixPreviewUrls, setPixPreviewUrls] = useState<
-    Record<string, string>
-  >({});
+  const [submitted, setSubmitted] =
+    useState(false);
+
+  const [
+    selectedPixFiles,
+    setSelectedPixFiles,
+  ] = useState<File[]>([]);
+
+  const [
+    pixFileError,
+    setPixFileError,
+  ] = useState<string | null>(null);
+
+  const [
+    pixPreviewUrls,
+    setPixPreviewUrls,
+  ] = useState<Record<string, string>>({});
 
   const {
     register,
     control,
     handleSubmit,
     setValue,
-    formState: { errors, isSubmitting },
-  } = useForm<RegistrationFormData>({
-    resolver: zodResolver(registrationSchema),
+    formState: {
+      errors,
+      isSubmitting,
+    },
+  } = useForm<
+      RegistrationInput,
+      unknown,
+      RegistrationOutput
+    >({
+    resolver: zodResolver(
+      registrationSchema,
+    ),
     mode: "onBlur",
     defaultValues: {
       email: "",
@@ -108,55 +153,84 @@ export function RegistrationForm() {
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const {
+    fields,
+    append,
+    remove,
+  } = useFieldArray({
     control,
     name: "guests",
   });
 
-  const guests = useWatch({
-    control,
-    name: "guests",
-  });
+  const guests =
+    useWatch<
+      RegistrationInput,
+      "guests"
+    >({
+      control,
+      name: "guests",
+      defaultValue: [emptyGuest],
+    });
 
   const totalAmount = useMemo(() => {
-    return guests.reduce((total, guest) => {
-      const option = guestProfileOptions.find(
-        (item) => item.value === guest?.guestProfile,
-      );
+    return (guests ?? []).reduce<number>(
+      (
+        total: number,
+        guest: GuestField,
+      ) => {
+        const option =
+          guestProfileOptions.find(
+            (item) =>
+              item.value ===
+              guest.guestProfile,
+          );
 
-      return total + (option?.pixAmount ?? 0);
-    }, 0);
+        return (
+          total + (option?.pixAmount ?? 0)
+        );
+      },
+      0,
+    );
   }, [guests]);
 
   useEffect(() => {
-    const nextPreviewUrls: Record<string, string> = {};
+    const nextPreviewUrls: Record<
+      string,
+      string
+    > = {};
 
     selectedPixFiles.forEach((file) => {
       if (file.type.startsWith("image/")) {
-        nextPreviewUrls[getFileKey(file)] =
-          URL.createObjectURL(file);
+        nextPreviewUrls[
+          getFileKey(file)
+        ] = URL.createObjectURL(file);
       }
     });
 
     setPixPreviewUrls(nextPreviewUrls);
 
     return () => {
-      Object.values(nextPreviewUrls).forEach((url) => {
-        URL.revokeObjectURL(url);
-      });
+      Object.values(nextPreviewUrls).forEach(
+        (url) => {
+          URL.revokeObjectURL(url);
+        },
+      );
     };
   }, [selectedPixFiles]);
 
   function setPixInputFiles(files: File[]) {
     if (pixInputRef.current) {
-      pixInputRef.current.files = createFileList(files);
+      pixInputRef.current.files =
+        createFileList(files);
     }
   }
 
   function handlePixFilesChange(
     event: ChangeEvent<HTMLInputElement>,
   ) {
-    const incomingFiles = Array.from(event.target.files ?? []);
+    const incomingFiles = Array.from(
+      event.target.files ?? [],
+    );
 
     if (incomingFiles.length === 0) {
       return;
@@ -173,6 +247,7 @@ export function RegistrationForm() {
       setPixFileError(
         "Aceite apenas arquivos PNG, JPG, JPEG ou PDF.",
       );
+
       event.target.value = "";
       return;
     }
@@ -185,21 +260,28 @@ export function RegistrationForm() {
       setPixFileError(
         "Cada arquivo deve ter no máximo 10 MB.",
       );
+
       event.target.value = "";
       return;
     }
 
-    const mergedFiles = [...selectedPixFiles, ...incomingFiles];
+    const mergedFiles = [
+      ...selectedPixFiles,
+      ...incomingFiles,
+    ];
 
     const uniqueFiles = mergedFiles.filter(
       (file, index, files) =>
         files.findIndex(
           (currentFile) =>
-            getFileKey(currentFile) === getFileKey(file),
+            getFileKey(currentFile) ===
+            getFileKey(file),
         ) === index,
     );
 
-    if (uniqueFiles.length > maxFileCount) {
+    if (
+      uniqueFiles.length > maxFileCount
+    ) {
       setPixFileError(
         `Você pode selecionar no máximo ${maxFileCount} arquivos.`,
       );
@@ -207,54 +289,77 @@ export function RegistrationForm() {
       setPixFileError(null);
     }
 
-    const limitedFiles = uniqueFiles.slice(0, maxFileCount);
+    const limitedFiles =
+      uniqueFiles.slice(0, maxFileCount);
 
     setSelectedPixFiles(limitedFiles);
     setPixInputFiles(limitedFiles);
 
-    setValue("pixReceipt", createFileList(limitedFiles), {
-      shouldValidate: false,
-      shouldDirty: true,
-      shouldTouch: true,
-    });
+    setValue(
+      "pixReceipt",
+      createFileList(limitedFiles),
+      {
+        shouldValidate: false,
+        shouldDirty: true,
+        shouldTouch: true,
+      },
+    );
 
     event.target.value = "";
   }
 
   function removePixFile(fileKey: string) {
-    const remainingFiles = selectedPixFiles.filter(
-      (file) => getFileKey(file) !== fileKey,
-    );
+    const remainingFiles =
+      selectedPixFiles.filter(
+        (file) =>
+          getFileKey(file) !== fileKey,
+      );
 
     setSelectedPixFiles(remainingFiles);
     setPixInputFiles(remainingFiles);
     setPixFileError(null);
 
-    setValue("pixReceipt", createFileList(remainingFiles), {
-      shouldValidate: false,
-      shouldDirty: true,
-      shouldTouch: true,
-    });
+    setValue(
+      "pixReceipt",
+      createFileList(remainingFiles),
+      {
+        shouldValidate: false,
+        shouldDirty: true,
+        shouldTouch: true,
+      },
+    );
   }
 
   function addGuest() {
-    if (fields.length >= maxGuestCount) {
+    if (
+      fields.length >= maxGuestCount
+    ) {
       return;
     }
 
-    append(emptyGuest);
+    append({
+      ...emptyGuest,
+    });
   }
 
-  async function onSubmit(data: RegistrationFormData) {
+  async function onSubmit(
+    data: RegistrationOutput,
+  ) {
     if (selectedPixFiles.length === 0) {
-      setPixFileError("Envie pelo menos um comprovante.");
+      setPixFileError(
+        "Envie pelo menos um comprovante.",
+      );
+
       return;
     }
 
-    if (selectedPixFiles.length > maxFileCount) {
+    if (
+      selectedPixFiles.length > maxFileCount
+    ) {
       setPixFileError(
         `Você pode selecionar no máximo ${maxFileCount} arquivos.`,
       );
+
       return;
     }
 
@@ -266,30 +371,49 @@ export function RegistrationForm() {
         pixReceipt: undefined,
       };
 
-      formData.append("data", JSON.stringify(serializedData));
+      formData.append(
+        "data",
+        JSON.stringify(serializedData),
+      );
 
       selectedPixFiles.forEach((file) => {
-        formData.append("pixReceipt", file, file.name);
+        formData.append(
+          "pixReceipt",
+          file,
+          file.name,
+        );
       });
 
-      const response = await fetch("/api/inscricoes", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        "/api/inscricoes",
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
 
       const result = await response.json();
 
       if (!response.ok) {
         setPixFileError(
-          result.error ?? "Não foi possível criar a inscrição.",
+          result.error ??
+            "Não foi possível criar a inscrição.",
         );
+
         return;
       }
 
-      console.log("Inscrição persistida:", result.group);
+      console.log(
+        "Inscrição persistida:",
+        result.group,
+      );
+
       setSubmitted(true);
     } catch (error) {
-      console.error("Erro ao enviar inscrição:", error);
+      console.error(
+        "Erro ao enviar inscrição:",
+        error,
+      );
 
       setPixFileError(
         "Não foi possível conectar ao servidor.",
@@ -307,8 +431,7 @@ export function RegistrationForm() {
         </h2>
 
         <p className="mt-3 text-white/70">
-          A integração com o Google Sheets será adicionada na
-          próxima etapa.
+          A integração com o Google Sheets será adicionada na próxima etapa.
         </p>
       </div>
     );
@@ -316,7 +439,9 @@ export function RegistrationForm() {
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(
+        onSubmit as SubmitHandler<RegistrationInput>,
+      )}
       className="space-y-8"
     >
       <section className="rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-md sm:p-8">
@@ -330,17 +455,18 @@ export function RegistrationForm() {
           </h2>
 
           <p className="mt-2 text-sm text-white/60">
-            Informe o e-mail da pessoa responsável pela inscrição.
+            Informe o nome da pessoa responsável pela inscrição.
           </p>
         </div>
 
         <FormField
-          label="E-mail"
+          label="Nome"
           error={errors.email?.message}
         >
           <TextInput
-            type="email"
-            placeholder="seuemail@exemplo.com"
+            type="text"
+            placeholder="Digite seu nome completo"
+            autoComplete="name"
             {...register("email")}
           />
         </FormField>
@@ -360,7 +486,9 @@ export function RegistrationForm() {
         <div className="grid gap-5 sm:grid-cols-2">
           <FormField
             label="Nome completo do padrinho"
-            error={errors.sponsorName?.message}
+            error={
+              errors.sponsorName?.message
+            }
           >
             <TextInput
               placeholder="Nome completo"
@@ -370,7 +498,9 @@ export function RegistrationForm() {
 
           <FormField
             label="WhatsApp do padrinho"
-            error={errors.sponsorWhatsapp?.message}
+            error={
+              errors.sponsorWhatsapp?.message
+            }
           >
             <TextInput
               type="tel"
@@ -393,8 +523,7 @@ export function RegistrationForm() {
             </h2>
 
             <p className="mt-2 text-sm text-white/60">
-              Cada convidado terá seu próprio cadastro e link de
-              acesso.
+              Cada convidado terá seu próprio cadastro e link de acesso.
             </p>
           </div>
 
@@ -402,14 +531,17 @@ export function RegistrationForm() {
             type="button"
             variant="secondary"
             onClick={addGuest}
-            disabled={fields.length >= maxGuestCount}
+            disabled={
+              fields.length >= maxGuestCount
+            }
           >
             <Plus className="mr-2 h-4 w-4" />
             Adicionar convidado
           </EjcButton>
         </div>
 
-        {typeof errors.guests?.message === "string" && (
+        {typeof errors.guests?.message ===
+          "string" && (
           <p className="mb-4 text-sm text-pink-200">
             {errors.guests.message}
           </p>
@@ -417,13 +549,20 @@ export function RegistrationForm() {
 
         <div className="space-y-6">
           {fields.map((field, index) => {
-            const selectedChurch = guests[index]?.church;
-            const selectedProfile = guests[index]?.guestProfile;
+            const selectedProfile =
+              guests[index]?.guestProfile ??
+              "";
 
             const selectedProfileData =
               guestProfileOptions.find(
-                (option) => option.value === selectedProfile,
+                (option) =>
+                  option.value ===
+                  selectedProfile,
               );
+
+            const showOtherChurch =
+              selectedProfile ===
+              "OTHER_EVANGELICAL_CHURCH";
 
             return (
               <div
@@ -444,7 +583,9 @@ export function RegistrationForm() {
                   {fields.length > 1 && (
                     <button
                       type="button"
-                      onClick={() => remove(index)}
+                      onClick={() =>
+                        remove(index)
+                      }
                       className="rounded-xl p-2 text-white/50 transition hover:bg-red-400/10 hover:text-red-200"
                       aria-label={`Remover convidado ${index + 1}`}
                     >
@@ -455,34 +596,45 @@ export function RegistrationForm() {
 
                 <div className="space-y-5">
                   <FormField
-                    label="Igreja"
+                    label="Perfil do convidado"
                     error={
-                      errors.guests?.[index]?.church?.message
+                      errors.guests?.[index]
+                        ?.guestProfile
+                        ?.message
                     }
                   >
                     <SelectInput
-                      {...register(`guests.${index}.church`)}
                       defaultValue=""
+                      {...register(
+                        `guests.${index}.guestProfile`,
+                      )}
                     >
-                      <option value="" disabled>
+                      <option
+                        value=""
+                        disabled
+                      >
                         Selecione uma opção
                       </option>
 
-                      <option value="TEOSOPOLIS">
-                        Igreja Batista Teosópolis
-                      </option>
-
-                      <option value="OTHER">
-                        Outra igreja
-                      </option>
+                      {guestProfileOptions.map(
+                        (option) => (
+                          <option
+                            key={option.value}
+                            value={option.value}
+                          >
+                            {option.label}
+                          </option>
+                        ),
+                      )}
                     </SelectInput>
                   </FormField>
 
-                  {selectedChurch === "OTHER" && (
+                  {showOtherChurch && (
                     <FormField
-                      label="Nome da igreja"
+                      label="Nome da outra igreja"
                       error={
-                        errors.guests?.[index]?.otherChurchName
+                        errors.guests?.[index]
+                          ?.otherChurchName
                           ?.message
                       }
                     >
@@ -495,37 +647,12 @@ export function RegistrationForm() {
                     </FormField>
                   )}
 
-                  <FormField
-                    label="Perfil do convidado"
-                    error={
-                      errors.guests?.[index]?.guestProfile
-                        ?.message
-                    }
-                  >
-                    <SelectInput
-                      {...register(`guests.${index}.guestProfile`)}
-                      defaultValue=""
-                    >
-                      <option value="" disabled>
-                        Selecione uma opção
-                      </option>
-
-                      {guestProfileOptions.map((option) => (
-                        <option
-                          key={option.value}
-                          value={option.value}
-                        >
-                          {option.label}
-                        </option>
-                      ))}
-                    </SelectInput>
-                  </FormField>
-
                   <div className="grid gap-5 sm:grid-cols-2">
                     <FormField
                       label="Nome completo"
                       error={
-                        errors.guests?.[index]?.guestName
+                        errors.guests?.[index]
+                          ?.guestName
                           ?.message
                       }
                     >
@@ -540,7 +667,8 @@ export function RegistrationForm() {
                     <FormField
                       label="WhatsApp"
                       error={
-                        errors.guests?.[index]?.guestWhatsapp
+                        errors.guests?.[index]
+                          ?.guestWhatsapp
                           ?.message
                       }
                     >
@@ -561,8 +689,7 @@ export function RegistrationForm() {
                       </p>
 
                       <p className="mt-2 text-sm text-white/60">
-                        Essas informações são obrigatórias para este
-                        convidado.
+                        Essas informações são obrigatórias para este convidado.
                       </p>
                     </div>
 
@@ -571,7 +698,8 @@ export function RegistrationForm() {
                         label="Nome dos pais adotivos"
                         error={
                           errors.guests?.[index]
-                            ?.adoptiveParentsName?.message
+                            ?.adoptiveParentsName
+                            ?.message
                         }
                       >
                         <TextInput
@@ -586,7 +714,8 @@ export function RegistrationForm() {
                         label="WhatsApp dos pais adotivos"
                         error={
                           errors.guests?.[index]
-                            ?.adoptiveParentsWhatsapp?.message
+                            ?.adoptiveParentsWhatsapp
+                            ?.message
                         }
                       >
                         <TextInput
@@ -642,8 +771,7 @@ export function RegistrationForm() {
 
           <p className="mt-2 text-sm text-white/60">
             Envie os comprovantes referentes ao pagamento do grupo.
-            Aceitamos PNG, JPG, JPEG ou PDF, com até 10 MB por
-            arquivo.
+            Aceitamos PNG, JPG, JPEG ou PDF, com até 10 MB por arquivo.
           </p>
         </div>
 
@@ -661,14 +789,18 @@ export function RegistrationForm() {
           <input
             ref={(element) => {
               pixInputRef.current = element;
-              register("pixReceipt").ref(element);
+              register("pixReceipt").ref(
+                element,
+              );
             }}
             name="pixReceipt"
             type="file"
             className="sr-only"
             accept=".png,.jpg,.jpeg,.pdf"
             multiple
-            onBlur={register("pixReceipt").onBlur}
+            onBlur={
+              register("pixReceipt").onBlur
+            }
             onChange={handlePixFilesChange}
           />
         </label>
@@ -681,22 +813,31 @@ export function RegistrationForm() {
               </h3>
 
               <span className="text-xs text-white/50">
-                {selectedPixFiles.length}/{maxFileCount}
+                {selectedPixFiles.length}/
+                {maxFileCount}
               </span>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
               {selectedPixFiles.map((file) => {
-                const fileKey = getFileKey(file);
-                const previewUrl = pixPreviewUrls[fileKey];
-                const isImage = file.type.startsWith("image/");
+                const fileKey =
+                  getFileKey(file);
+
+                const previewUrl =
+                  pixPreviewUrls[fileKey];
+
+                const isImage =
+                  file.type.startsWith(
+                    "image/",
+                  );
 
                 return (
                   <div
                     key={fileKey}
                     className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/10 p-3"
                   >
-                    {isImage && previewUrl ? (
+                    {isImage &&
+                    previewUrl ? (
                       <img
                         src={previewUrl}
                         alt={`Prévia de ${file.name}`}
@@ -714,13 +855,19 @@ export function RegistrationForm() {
                       </p>
 
                       <p className="mt-1 text-xs text-white/50">
-                        {formatFileSize(file.size)}
+                        {formatFileSize(
+                          file.size,
+                        )}
                       </p>
                     </div>
 
                     <button
                       type="button"
-                      onClick={() => removePixFile(fileKey)}
+                      onClick={() =>
+                        removePixFile(
+                          fileKey,
+                        )
+                      }
                       className="rounded-full p-2 text-white/50 transition hover:bg-white/10 hover:text-white"
                       aria-label={`Remover ${file.name}`}
                     >
@@ -739,7 +886,8 @@ export function RegistrationForm() {
           </p>
         )}
 
-        {typeof errors.pixReceipt?.message === "string" && (
+        {typeof errors.pixReceipt
+          ?.message === "string" && (
           <p className="mt-3 text-sm text-pink-200">
             {errors.pixReceipt.message}
           </p>
@@ -747,13 +895,21 @@ export function RegistrationForm() {
       </section>
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-        <EjcButton type="button" variant="secondary">
+        <EjcButton
+          type="button"
+          variant="secondary"
+        >
           <ArrowLeft className="mr-2 h-5 w-5" />
           Voltar
         </EjcButton>
 
-        <EjcButton type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Enviando..." : "Inscrever"}
+        <EjcButton
+          type="submit"
+          disabled={isSubmitting}
+        >
+          {isSubmitting
+            ? "Enviando..."
+            : "Inscrever"}
         </EjcButton>
       </div>
     </form>
