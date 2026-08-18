@@ -35,7 +35,7 @@ export function GuestWhatsAppButton({
   const message =
     `Olá, ${name || "tudo bem"}!\n\n` +
     `Para completar seu cadastro do EJC, ` +
-    `acesse este link:\n${registrationUrl}`;
+    `acesse este link:\nhttp://localhost:3000/convidado/${registrationUrl}`;
 
   const whatsappUrl =
     `https://wa.me/${digits}?text=${encodeURIComponent(

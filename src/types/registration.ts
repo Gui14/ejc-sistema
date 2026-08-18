@@ -8,7 +8,8 @@ export type RegistrationDraft = RegistrationFormData;
 export type DriveFileCategory =
   | "PIX_RECEIPT"
   | "GUEST_PHOTO"
-  | "RG_PHOTO";
+  | "RG_PHOTO"
+  | "ENCONTREIRO_PIX";
 
 export type RegistrationFile = {
   id: string;

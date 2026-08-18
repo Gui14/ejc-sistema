@@ -21,7 +21,7 @@ export default async function AdminGuestPage({
     <main className="min-h-screen bg-slate-950 text-white">
       <div className="mx-auto max-w-4xl px-5 py-8 sm:px-8">
         <Link
-          href="/admin/convidados"
+          href="/admin/encontristas/convidados"
           className="inline-flex items-center gap-2 text-sm text-white/50 transition hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" />

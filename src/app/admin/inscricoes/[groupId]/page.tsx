@@ -22,7 +22,7 @@ export default async function RegistrationDetailsPage({
       <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8">
         <header className="border-b border-white/10 pb-6">
           <Link
-            href="/admin/inscricoes"
+            href="/admin/encontristas/inscricoes"
             className="inline-flex items-center gap-2 text-sm text-white/50 transition hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />

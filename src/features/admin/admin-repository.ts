@@ -557,7 +557,7 @@ export async function updateRegistrationGroup(
       guestRow[18] = now;
 
       updateRequests.push({
-        range: `Convidados!A${index + 1}:T${index + 1}`,
+        range: `Convidados!A${index + 1}:AM${index + 1}`,
         values: [guestRow],
       });
     },
@@ -1313,12 +1313,12 @@ export async function getAdminGuestsbetter(): Promise<
           GUEST_SPONSOR_ID_COLUMN,
         ),
         sponsorName:
-          sponsorMap.get(
+          
             getCell(
               row,
               8,
-            ),
-          ) ?? "Sem padrinho",
+            )
+           ?? "Sem padrinho",
         name: getCell(
           row,
           GUEST_NAME_COLUMN,
@@ -1352,3 +1352,4 @@ export async function getAdminGuestsbetter(): Promise<
       };
     });
 }
+

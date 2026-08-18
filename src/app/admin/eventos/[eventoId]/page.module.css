@@ -1,0 +1,176 @@
+.detailShell {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.backLink {
+  display: inline-block;
+  margin-bottom: 28px;
+  color: #1d4ed8;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.detailHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.detailHeader h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: -0.04em;
+}
+
+.status {
+  display: inline-flex;
+  padding: 7px 11px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.statusPLANNED { background: #dbeafe; color: #1d4ed8; }
+.statusIN_PROGRESS { background: #fef3c7; color: #92400e; }
+.statusFINISHED { background: #dcfce7; color: #166534; }
+.statusCANCELLED { background: #fee2e2; color: #991b1b; }
+.statusDefault { background: #f1f5f9; color: #475569; }
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.infoCard,
+.financeBanner,
+.description {
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgb(15 23 42 / 5%);
+}
+
+.infoCard {
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+}
+
+.infoCard span {
+  color: #64748b;
+  font-size: 0.82rem;
+}
+
+.infoCard strong {
+  font-size: 1rem;
+}
+
+.financeBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 26px;
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.financeBanner h2 {
+  margin: 0;
+  color: #1e3a8a;
+}
+
+.financeBanner p:not(.eyebrow) {
+  margin: 8px 0 0;
+  color: #475569;
+}
+
+.detailActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin: 22px 0;
+}
+
+.dangerButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 14px;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  background: #fff;
+  color: #b91c1c;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.dangerButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.form {
+  padding: 28px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.form label {
+  display: grid;
+  gap: 8px;
+  color: #334155;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.form input,
+.form select,
+.form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  padding: 11px 12px;
+  background: #fff;
+  color: #172033;
+  font: inherit;
+  font-weight: 400;
+}
+
+.form textarea { resize: vertical; }
+.fullWidth { grid-column: 1 / -1; }
+.formActions { display: flex; justify-content: flex-end; margin-top: 24px; }
+.formError { color: #b91c1c; font-weight: 700; }
+.successBox { color: #166534; font-weight: 700; }
+
+.description {
+  margin-top: 24px;
+  padding: 24px;
+}
+
+.description h2 { margin-top: 0; }
+.description p { margin-bottom: 0; color: #475569; white-space: pre-wrap; }
+
+@media (max-width: 760px) {
+  .detailHeader,
+  .financeBanner { align-items: stretch; flex-direction: column; }
+  .detailGrid { grid-template-columns: 1fr; }
+  .formGrid { grid-template-columns: 1fr; }
+  .fullWidth { grid-column: auto; }
+  .detailActions { justify-content: stretch; flex-direction: column; }
+  .detailActions button, .financeBanner a { width: 100%; }
+}
