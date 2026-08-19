@@ -472,50 +472,13 @@ export function RegistrationForm() {
         </FormField>
       </section>
 
-      <section className="rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-md sm:p-8">
-        <div className="mb-6">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-pink-200">
-            Etapa 02
-          </p>
-
-          <h2 className="mt-2 text-2xl font-black">
-            Dados do Pai adotivo
-          </h2>
-        </div>
-
-        <div className="grid gap-5 sm:grid-cols-2">
-          <FormField
-            label="Nome completo do Pai adotivo"
-            error={
-              errors.sponsorName?.message
-            }
-          >
-            <TextInput
-              placeholder="Nome completo"
-              {...register("sponsorName")}
-            />
-          </FormField>
-
-          <FormField
-            label="WhatsApp do Pai adotivo"
-            error={
-              errors.sponsorWhatsapp?.message
-            }
-          >
-            <TextInput
-              type="tel"
-              placeholder="(73) 99999-9999"
-              {...register("sponsorWhatsapp")}
-            />
-          </FormField>
-        </div>
-      </section>
+     
 
       <section className="rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-md sm:p-8">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-pink-200">
-              Etapa 03
+              Etapa 02
             </p>
 
             <h2 className="mt-2 text-2xl font-black">
@@ -762,7 +725,7 @@ export function RegistrationForm() {
       <section className="rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-md sm:p-8">
         <div className="mb-6">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-pink-200">
-            Etapa 04
+            Etapa 03
           </p>
 
           <h2 className="mt-2 text-2xl font-black">
