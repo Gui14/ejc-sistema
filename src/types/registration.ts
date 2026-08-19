@@ -35,16 +35,18 @@ export type RegistrationGuest = GuestFormData & {
   completedAt: string | null;
 };
 
+export type RegistrationSponsor = {
+  id: string;
+  name: string;
+  whatsapp: string;
+};
+
 export type RegistrationGroup = {
   groupId: string;
   createdAt: string;
   updatedAt: string;
   email: string;
-  sponsor: {
-    id: string;
-    name: string;
-    whatsapp: string;
-  };
+  sponsor: RegistrationSponsor;
   guests: RegistrationGuest[];
   pixReceipts: RegistrationFile[];
   totalAmount: number;

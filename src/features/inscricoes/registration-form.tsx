@@ -59,8 +59,8 @@ type GuestField = {
   otherChurchName?: string;
   guestName: string;
   guestWhatsapp: string;
-  adoptiveParentsName: string;
-  adoptiveParentsWhatsapp: string;
+  sponsorName: string;
+  sponsorWhatsapp: string;
 };
 
 const emptyGuest: GuestField = {
@@ -68,8 +68,8 @@ const emptyGuest: GuestField = {
   otherChurchName: "",
   guestName: "",
   guestWhatsapp: "",
-  adoptiveParentsName: "",
-  adoptiveParentsWhatsapp: "",
+  sponsorName: "",
+  sponsorWhatsapp: "",
 };
 
 function getFileKey(file: File) {
@@ -146,9 +146,7 @@ export function RegistrationForm() {
     mode: "onBlur",
     defaultValues: {
       email: "",
-      sponsorName: "",
-      sponsorWhatsapp: "",
-      guests: [emptyGuest],
+      guests: [{ ...emptyGuest }],
       pixReceipt: undefined,
     },
   });
@@ -472,7 +470,7 @@ export function RegistrationForm() {
         </FormField>
       </section>
 
-     
+      
 
       <section className="rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-md sm:p-8">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -661,14 +659,14 @@ export function RegistrationForm() {
                         label="Nome dos pais adotivos"
                         error={
                           errors.guests?.[index]
-                            ?.adoptiveParentsName
+                            ?.sponsorName
                             ?.message
                         }
                       >
                         <TextInput
                           placeholder="Nome completo"
                           {...register(
-                            `guests.${index}.adoptiveParentsName`,
+                            `guests.${index}.sponsorName`,
                           )}
                         />
                       </FormField>
@@ -677,7 +675,7 @@ export function RegistrationForm() {
                         label="WhatsApp dos pais adotivos"
                         error={
                           errors.guests?.[index]
-                            ?.adoptiveParentsWhatsapp
+                            ?.sponsorWhatsapp
                             ?.message
                         }
                       >
@@ -685,7 +683,7 @@ export function RegistrationForm() {
                           type="tel"
                           placeholder="(73) 99999-9999"
                           {...register(
-                            `guests.${index}.adoptiveParentsWhatsapp`,
+                            `guests.${index}.sponsorWhatsapp`,
                           )}
                         />
                       </FormField>

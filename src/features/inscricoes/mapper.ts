@@ -59,6 +59,47 @@ function mapPixFiles(
   }));
 }
 
+function normalizeName(name: string) {
+  return name.trim().replace(/\s+/g, " ");
+}
+
+function collectUniqueSponsorNames(
+  guests: RegistrationGuest[],
+) {
+  const uniqueNames = new Map<string, string>();
+
+  for (const guest of guests) {
+    const name = normalizeName(guest.sponsorName);
+
+    if (!name) {
+      continue;
+    }
+
+    const normalizedKey = name.toLocaleLowerCase("pt-BR");
+
+    if (!uniqueNames.has(normalizedKey)) {
+      uniqueNames.set(normalizedKey, name);
+    }
+  }
+
+  return Array.from(uniqueNames.values());
+}
+
+function createSponsorFromGuests(
+  guests: RegistrationGuest[],
+) {
+  const sponsorNames = collectUniqueSponsorNames(guests);
+  const firstGuestWithSponsor = guests.find(
+    (guest) => normalizeName(guest.sponsorName).length > 0,
+  );
+
+  return {
+    id: createId("sponsor"),
+    name: sponsorNames.join(", "),
+    whatsapp: firstGuestWithSponsor?.sponsorWhatsapp ?? "",
+  };
+}
+
 export function createRegistrationGroup(
   data: RegistrationDraft,
 ): RegistrationGroup {
@@ -80,11 +121,7 @@ export function createRegistrationGroup(
     createdAt: now,
     updatedAt: now,
     email: data.email,
-    sponsor: {
-      id: createId("sponsor"),
-      name: data.sponsorName,
-      whatsapp: data.sponsorWhatsapp,
-    },
+    sponsor: createSponsorFromGuests(guests),
     guests,
     pixReceipts: mapPixFiles(data.pixReceipt),
     totalAmount,

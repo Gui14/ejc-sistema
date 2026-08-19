@@ -238,7 +238,7 @@ export function AdminGuestsTable({ guests, initialStatus, initialQuery }: Props)
                       <GuestWhatsAppButton
                         name={guest.name}
                         phone={guest.phone}
-                        registrationUrl={guest.registrationUrl}
+                        registrationUrl={guest.registrationToken}
                       />
                       
                       <Link

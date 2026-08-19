@@ -11,9 +11,7 @@ import type {
   RegistrationGroup,
 } from "@/types/registration";
 
-import type {
-  DriveFileCategory,
-} from "@/features/inscricoes/registration-types";
+
 
 export async function persistRegistrationGroup(
   group: RegistrationGroup,
@@ -58,9 +56,9 @@ export async function persistRegistrationGroup(
   );
 
   await appendSheetRow(
-    "Padrinhos",
-    mapSponsorToSheetRow(groupWithFiles),
-  );
+  "Padrinhos",
+  mapSponsorToSheetRow(groupWithFiles),
+);
 
   for (const guest of groupWithFiles.guests) {
     await appendSheetRow(
