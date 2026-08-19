@@ -1162,7 +1162,7 @@ function buildGuestRegistrationUrl(
 ) {
   const baseUrl =
     process.env.NEXT_PUBLIC_APP_URL ??
-    "http://localhost:3000";
+    "https://ejc-sistema-blush.vercel.app";
 
   return `${baseUrl}/convidado/${encodeURIComponent(
     token,
