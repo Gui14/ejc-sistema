@@ -61,6 +61,7 @@ export function mapGuestToSheetRow(
     guest.id,
     group.groupId,
     group.sponsor.id,
+    guest.church ?? "",
     nullable(guest.otherChurchName),
     guest.guestProfile,
     guest.guestName,
