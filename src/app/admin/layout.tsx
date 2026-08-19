@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Users, UserCheck, LogOut, ShieldCheck } from "lucide-react";
+import { Users, LogOut, ShieldCheck, Calendar, UserCog } from "lucide-react";
 
 type AdminLayoutProps = {
   children: React.ReactNode;
@@ -10,8 +10,9 @@ type AdminLayoutProps = {
 
 const NAV_ITEMS = [
   { href: "/admin/encontristas/inscricoes", label: "Encontristas", icon: Users },
-  { href: "/admin/encontreiros", label: "Encontreiros", icon: UserCheck },
+  { href: "/admin/encontreiros", label: "Encontreiros", icon: UserCog },
   { href: "/admin/equipes", label: "Equipes", icon: Users },
+  { href: "/admin/eventos", label: "Eventos", icon: Calendar },
 ];
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
