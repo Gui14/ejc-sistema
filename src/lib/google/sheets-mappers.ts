@@ -3,6 +3,10 @@ import type {
   RegistrationGuest,
 } from "@/types/registration";
 
+import type {
+  RegistrationFile
+} from "@/types/registration";
+
 function nullable(value: unknown) {
   return value ?? "";
 }
@@ -57,7 +61,6 @@ export function mapGuestToSheetRow(
     guest.id,
     group.groupId,
     group.sponsor.id,
-    guest.church,
     nullable(guest.otherChurchName),
     guest.guestProfile,
     guest.guestName,
@@ -79,16 +82,7 @@ export function mapGuestToSheetRow(
 
 export function mapFileToSheetRow(
   group: RegistrationGroup,
-  file: {
-    id: string;
-    originalName: string;
-    mimeType: string;
-    size: number;
-    driveFileId: string | null;
-    driveUrl: string | null;
-    category: "PIX_RECEIPT" | "GUEST_PHOTO" | "RG_PHOTO";
-    guestId: string | null;
-  },
+  file: RegistrationFile,
 ) {
   return [
     file.id,

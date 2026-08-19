@@ -11,6 +11,10 @@ import type {
   RegistrationGroup,
 } from "@/types/registration";
 
+import type {
+  DriveFileCategory,
+} from "@/features/inscricoes/registration-types";
+
 export async function persistRegistrationGroup(
   group: RegistrationGroup,
   pixFiles: File[],

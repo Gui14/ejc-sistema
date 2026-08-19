@@ -26,6 +26,7 @@ export type RegistrationGuest = GuestFormData & {
   id: string;
   groupId: string;
   inviteeToken: string;
+  church: string | null;
   completionStatus: "PENDING" | "COMPLETED";
   foodRestriction: string | null;
   personPhotoUrl: string | null;

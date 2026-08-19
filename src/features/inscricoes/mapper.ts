@@ -31,6 +31,7 @@ function mapGuest(
     groupId,
     inviteeToken: crypto.randomUUID(),
     completionStatus: "PENDING",
+    church: null,
     foodRestriction: null,
     personPhotoUrl: null,
     rgPhotoUrl: null,
