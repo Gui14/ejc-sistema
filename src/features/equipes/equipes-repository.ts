@@ -20,10 +20,7 @@ const COLUMNS = {
   updatedAt: 5,
 } as const;
 
-export type EquipeStatus =
-  | "ACTIVE"
-  | "INACTIVE"
-  | "DELETED";
+export type EquipeStatus = "ACTIVE" | "INACTIVE" | "DELETED";
 
 export type Equipe = {
   rowNumber: number;
@@ -33,6 +30,18 @@ export type Equipe = {
   status: EquipeStatus | string;
   createdAt: string;
   updatedAt: string;
+};
+
+export type EquipeCoordenador = {
+  id: string;
+  name: string;
+  phone?: string;
+};
+
+export type EquipeComResumo = Equipe & {
+  quantidadePessoas: number;
+  quantidadeCoordenadores: number;
+  coordenadores: EquipeCoordenador[];
 };
 
 type CreateEquipeData = {
@@ -49,123 +58,127 @@ type UpdateEquipeData = {
   status: EquipeStatus;
 };
 
-function cell(
-  row: string[],
-  index: number,
-) {
+function cell(row: string[], index: number) {
   return row[index] ?? "";
 }
 
-function mapRow(
-  row: string[],
-  rowNumber: number,
-): Equipe {
+function mapRow(row: string[], rowNumber: number): Equipe {
   return {
     rowNumber,
     id: cell(row, COLUMNS.id),
     name: cell(row, COLUMNS.name),
-    description: cell(
-      row,
-      COLUMNS.description,
-    ),
-    status: cell(
-      row,
-      COLUMNS.status,
-    ),
-    createdAt: cell(
-      row,
-      COLUMNS.createdAt,
-    ),
-    updatedAt: cell(
-      row,
-      COLUMNS.updatedAt,
-    ),
+    description: cell(row, COLUMNS.description),
+    status: cell(row, COLUMNS.status),
+    createdAt: cell(row, COLUMNS.createdAt),
+    updatedAt: cell(row, COLUMNS.updatedAt),
   };
 }
 
-function isHeaderRow(
-  row: string[],
-) {
-  return (
-    row[COLUMNS.id] === "equipe_id" ||
-    row[COLUMNS.name] === "nome"
-  );
+function isHeaderRow(row: string[]) {
+  return row[COLUMNS.id] === "equipe_id" || row[COLUMNS.name] === "nome";
 }
 
-function isVisible(
-  equipe: Equipe,
-) {
+function isVisible(equipe: Equipe) {
   return equipe.status !== "DELETED";
 }
 
-export async function getEquipesComQuantidadeDePessoas() {
-  const equipes = await getEquipes();
+function getCoordinatorName(value: unknown) {
+  return String(value ?? "").trim();
+}
 
-  return Promise.all(
-    equipes.map(async (equipe) => {
-      const membros = await getMembrosByEquipeId(
-        equipe.id,
-      );
+function getCoordinatorId(value: unknown, index: number) {
+  const id = String(value ?? "").trim();
+  return id || `coordenador_${index + 1}`;
+}
 
-      return {
-        ...equipe,
-        quantidadePessoas: membros.length,
-      };
-    }),
-  );
+function parseCoordinatorValue(value: unknown): EquipeCoordenador[] {
+  if (Array.isArray(value)) {
+    return value
+      .map((item, index) => {
+        if (typeof item === "string") {
+          const name = item.trim();
+          return name ? { id: getCoordinatorId("", index), name } : null;
+        }
+
+        if (item && typeof item === "object") {
+          const record = item as Record<string, unknown>;
+          const name = getCoordinatorName(record.name ?? record.nome);
+          return name
+            ? {
+                id: getCoordinatorId(record.id ?? record.coordenador_id, index),
+                name,
+                phone: getCoordinatorName(record.phone ?? record.whatsapp) || undefined,
+              }
+            : null;
+        }
+
+        return null;
+      })
+      .filter((item): item is EquipeCoordenador => item !== null);
+  }
+
+  return String(value ?? "")
+    .split(/[,;\n]/)
+    .map((name, index) => name.trim())
+    .filter(Boolean)
+    .map((name, index) => ({
+      id: `coordenador_${index + 1}`,
+      name,
+    }));
+}
+
+function getCoordinatorsFromEquipe(equipe: Equipe): EquipeCoordenador[] {
+  const possibleValue = (equipe as Equipe & {
+    coordinators?: unknown;
+    coordenadores?: unknown;
+    coordinatorNames?: unknown;
+    coordenadorNome?: unknown;
+  }).coordinators ?? (equipe as Equipe & { coordenadores?: unknown }).coordenadores ?? (equipe as Equipe & { coordinatorNames?: unknown }).coordinatorNames ?? (equipe as Equipe & { coordenadorNome?: unknown }).coordenadorNome;
+
+  return parseCoordinatorValue(possibleValue);
 }
 
 export async function getEquipes() {
   const rows = await getSheetRows(SHEET_NAME);
 
   return rows
-    .map((row, index) => ({
-      row,
-      rowNumber: index + 1,
-    }))
-    .filter(({ row, rowNumber }) => {
-      if (rowNumber === 1) {
-        return false;
-      }
-
-      return !isHeaderRow(row);
-    })
-    .map(({ row, rowNumber }) =>
-      mapRow(row, rowNumber),
-    )
+    .map((row, index) => ({ row, rowNumber: index + 1 }))
+    .filter(({ row, rowNumber }) => rowNumber !== 1 && !isHeaderRow(row))
+    .map(({ row, rowNumber }) => mapRow(row, rowNumber))
     .filter(isVisible);
 }
 
-export async function getEquipeById(
-  id: string,
-) {
-  const rows = await getSheetRows(SHEET_NAME);
+export async function getEquipesComQuantidadeDePessoas(): Promise<EquipeComResumo[]> {
+  const equipes = await getEquipes();
 
-  const rowIndex = rows.findIndex(
-    (row, index) =>
-      index > 0 &&
-      cell(row, COLUMNS.id) === id &&
-      cell(
-        row,
-        COLUMNS.status,
-      ) !== "DELETED",
-  );
+  return Promise.all(
+    equipes.map(async (equipe) => {
+      const membros = await getMembrosByEquipeId(equipe.id);
+      const coordenadores = getCoordinatorsFromEquipe(equipe);
 
-  if (rowIndex < 1) {
-    return null;
-  }
-
-  return mapRow(
-    rows[rowIndex],
-    rowIndex + 1,
+      return {
+        ...equipe,
+        quantidadePessoas: membros.length,
+        quantidadeCoordenadores: coordenadores.length,
+        coordenadores,
+      };
+    }),
   );
 }
 
-export async function createEquipe(
-  data: CreateEquipeData,
-) {
-  const now =
-    new Date().toISOString();
+export async function getEquipeById(id: string) {
+  const rows = await getSheetRows(SHEET_NAME);
+
+  const rowIndex = rows.findIndex(
+    (row, index) => index > 0 && cell(row, COLUMNS.id) === id && cell(row, COLUMNS.status) !== "DELETED",
+  );
+
+  if (rowIndex < 1) return null;
+  return mapRow(rows[rowIndex], rowIndex + 1);
+}
+
+export async function createEquipe(data: CreateEquipeData) {
+  const now = new Date().toISOString();
 
   await appendSheetRow(SHEET_NAME, [
     data.id,
@@ -177,76 +190,39 @@ export async function createEquipe(
   ]);
 
   clearSheetCache(SHEET_NAME);
-
   return getEquipeById(data.id);
 }
 
-export async function updateEquipe(
-  data: UpdateEquipeData,
-) {
-  const current =
-    await getEquipeById(data.id);
+export async function updateEquipe(data: UpdateEquipeData) {
+  const current = await getEquipeById(data.id);
+  if (!current) throw new Error("Equipe não encontrada.");
 
-  if (!current) {
-    throw new Error(
-      "Equipe não encontrada.",
-    );
-  }
-
-  const updatedAt =
-    new Date().toISOString();
-
-  const row: unknown[] = [
+  await updateSheetRow(SHEET_NAME, current.rowNumber, [
     data.id,
     data.name,
     data.description,
     data.status,
     current.createdAt,
-    updatedAt,
-  ];
-
-  await updateSheetRow(
-    SHEET_NAME,
-    current.rowNumber,
-    row,
-  );
+    new Date().toISOString(),
+  ]);
 
   clearSheetCache(SHEET_NAME);
-
   return getEquipeById(data.id);
 }
 
-export async function deleteEquipe(
-  id: string,
-) {
-  const current =
-    await getEquipeById(id);
+export async function deleteEquipe(id: string) {
+  const current = await getEquipeById(id);
+  if (!current) throw new Error("Equipe não encontrada.");
 
-  if (!current) {
-    throw new Error(
-      "Equipe não encontrada.",
-    );
-  }
-
-  const updatedAt =
-    new Date().toISOString();
-
-  const row: unknown[] = [
+  await updateSheetRow(SHEET_NAME, current.rowNumber, [
     current.id,
     current.name,
     current.description,
     "DELETED",
     current.createdAt,
-    updatedAt,
-  ];
-
-  await updateSheetRow(
-    SHEET_NAME,
-    current.rowNumber,
-    row,
-  );
+    new Date().toISOString(),
+  ]);
 
   clearSheetCache(SHEET_NAME);
-
   return true;
 }
